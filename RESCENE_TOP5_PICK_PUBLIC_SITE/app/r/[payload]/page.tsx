@@ -14,7 +14,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: "MY RESCENE TOP 5",
     description,
-    openGraph: { type: "website", title: "MY RESCENE TOP 5", description, images: [{ url: image, width: 1200, height: 630 }] },
+    alternates: { canonical: `/r/${payload}` },
+    openGraph: { type: "website", url: `/r/${payload}`, title: "MY RESCENE TOP 5", description, images: [{ url: image, width: 1200, height: 630 }] },
     twitter: { card: "summary_large_image", title: "MY RESCENE TOP 5", description, images: [image] }
   };
 }
