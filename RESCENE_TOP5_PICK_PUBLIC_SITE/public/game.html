@@ -324,25 +324,18 @@ async function copyLink(){
 }
 function openXComposer(postText){
   const intentUrl="https://x.com/intent/tweet?"+new URLSearchParams({text:postText}).toString();
-  const link=document.createElement("a");
-  link.href=intentUrl;
-  link.target="_blank";
-  link.rel="noopener noreferrer";
-  link.click();
+  // Open synchronously inside the button click so the browser treats it as a user-initiated popup.
+  const popup=window.open(intentUrl,"_blank");
+  if(!popup){
+    // If popups are blocked, keep the action usable by opening the composer in this tab.
+    window.location.assign(intentUrl);
+  }
 }
 function shareResult(){
   const url=resultUrl();
   const postText="나만의 리센느 TOP5\\n"+url+"\\n#RESCENE #리센느 #RESCENE_TOP5";
-  const blob=createResultImageBlob();
-  if(blob&&typeof File!=="undefined"&&navigator.share&&navigator.canShare){
-    const file=new File([blob],"my-rescene-top5.png",{type:"image/png"});
-    if(navigator.canShare({files:[file]})){
-      navigator.share({files:[file],title:"나만의 리센느 TOP5",text:postText}).catch(error=>{
-        if(error&&error.name!=="AbortError")alert("이미지 공유를 완료하지 못했습니다. 결과 이미지를 저장한 뒤 X 게시글에 첨부해 주세요.");
-      });
-      return;
-    }
-  }
+  // X's web composer cannot receive a local PNG through an intent URL.
+  // The result URL carries the per-result Open Graph image, which X previews after posting.
   openXComposer(postText);
 }
 function createResultImageBlob(){
