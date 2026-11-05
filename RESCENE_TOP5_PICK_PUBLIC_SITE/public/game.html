@@ -288,7 +288,7 @@ function showResult(){
         <button class="secondary" id="imageBtn">결과 이미지 저장</button>
         <button class="ghost" id="restartBtn">다시 하기</button>
       </div>
-      <p class="note">지원되는 기기에서는 결과 PNG를 공유 메뉴로 전달합니다. PC에서 X 작성창으로 열리면 짧은 결과 링크의 이미지 카드가 게시 후 표시됩니다.</p>
+      <p class="note">모바일에서는 공유 메뉴에서 X를 선택하면 결과 이미지가 함께 전달됩니다. PC에서는 결과 PNG가 자동 저장되며, X 작성창의 사진 아이콘에서 첨부할 수 있습니다.</p>
     </div>
     <div class="panel" style="box-shadow:none">
       <h3>LEAGUE TABLE</h3>
@@ -324,18 +324,41 @@ async function copyLink(){
 }
 function openXComposer(postText){
   const intentUrl="https://x.com/intent/tweet?"+new URLSearchParams({text:postText}).toString();
-  // Open synchronously inside the button click so the browser treats it as a user-initiated popup.
+  // Open synchronously inside the click event so popup blockers recognize the user gesture.
   const popup=window.open(intentUrl,"_blank");
-  if(!popup){
-    // If popups are blocked, keep the action usable by opening the composer in this tab.
-    window.location.assign(intentUrl);
-  }
+  if(!popup)window.location.assign(intentUrl);
+}
+function downloadShareImage(blob){
+  const objectUrl=URL.createObjectURL(blob);
+  const link=document.createElement("a");
+  link.href=objectUrl;
+  link.download="my-rescene-top5.png";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(()=>URL.revokeObjectURL(objectUrl),2000);
 }
 function shareResult(){
   const url=resultUrl();
-  const postText="나만의 리센느 TOP5\n"+url+"\n#RESCENE #리센느 #RESCENE_TOP5";
-  // X's web composer cannot receive a local PNG through an intent URL.
-  // The result URL carries the per-result Open Graph image, which X previews after posting.
+  const postText="나만의 리센느 TOP5\\n"+url+"\\n\\n#RESCENE #리센느 #RESCENE_TOP5";
+  const blob=createResultImageBlob();
+  if(!blob){
+    openXComposer(postText);
+    return;
+  }
+  const isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if(isMobile&&typeof File!=="undefined"&&navigator.share&&navigator.canShare){
+    const file=new File([blob],"my-rescene-top5.png",{type:"image/png"});
+    if(navigator.canShare({files:[file]})){
+      navigator.share({files:[file],title:"나만의 리센느 TOP5",text:postText}).catch(error=>{
+        if(error&&error.name!=="AbortError")alert("이미지 공유가 취소되거나 지원되지 않았습니다. 결과 이미지를 저장한 뒤 X에 첨부해 주세요.");
+      });
+      return;
+    }
+  }
+  // Desktop: download the actual result image, then open X. The file can be attached
+  // with X's photo button; Web Intents cannot pre-attach local image files.
+  downloadShareImage(blob);
   openXComposer(postText);
 }
 function createResultImageBlob(){
