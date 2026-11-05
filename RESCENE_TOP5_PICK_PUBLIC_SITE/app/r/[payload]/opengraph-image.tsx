@@ -22,7 +22,7 @@ export default async function OpenGraphImage({ params }: Props) {
           <span style={{ width:42, color:"#b56596", fontFamily:"Georgia,serif", fontWeight:400 }}>{String(i+1).padStart(2,"0")}</span><span>{name}</span>
         </div>)}
       </div>
-      <div style={{ display:"flex", marginTop:22, fontSize:15, letterSpacing:2, color:"#94617f" }}>#RESCENE　#리센느　#RESCENETOP5</div>
+      <div style={{ display:"flex", marginTop:22, fontSize:15, letterSpacing:2, color:"#94617f" }}>#RESCENE　#리센느　#RESCENE_TOP5</div>
     </div>, { ...size }
   );
 }
