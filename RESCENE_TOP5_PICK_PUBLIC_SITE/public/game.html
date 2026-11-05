@@ -328,14 +328,18 @@ async function copyLink(){
 }
 function shareResult(){
   const url=resultUrl();
-  const text="리센느의 노래 30곡 중 나만의 TOP5를 골라봤어요! 여러분도 취향의 TOP5를 만들어 보세요.";
+  const text="리센느의 노래로 나만의 TOP5를 골라봤어요. 여러분의 최애곡 TOP5도 만들어 보세요!";
+  const extraTags=state.tags
+    .map(tag=>String(tag).trim().replace(/^#+/,""))
+    .filter(Boolean);
+  const hashtags=[...new Set(["RESCENE","리센느","RESCENETOP5",...extraTags])];
   const params=new URLSearchParams({
     text,
     url,
-    hashtags:"RESCENE,리센느월드컵"
+    hashtags:hashtags.join(",")
   });
   const intentUrl="https://x.com/intent/tweet?"+params.toString();
-  const popup=window.open(intentUrl,"_blank");
+  const popup=window.open(intentUrl,"_blank","noopener,noreferrer");
   if(!popup) window.location.href=intentUrl;
 }
 function downloadImage(){
