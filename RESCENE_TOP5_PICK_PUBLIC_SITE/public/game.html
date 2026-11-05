@@ -339,8 +339,12 @@ function shareResult(){
     hashtags:hashtags.join(",")
   });
   const intentUrl="https://x.com/intent/tweet?"+params.toString();
-  const popup=window.open(intentUrl,"_blank","noopener,noreferrer");
-  if(!popup) window.location.href=intentUrl;
+  // Open directly from the user click without triggering the Web Share sheet.
+  const link=document.createElement("a");
+  link.href=intentUrl;
+  link.target="_blank";
+  link.rel="noopener noreferrer";
+  link.click();
 }
 function downloadImage(){
   const top=state.finalOrder.slice(0,5).map(id=>SONGS[id]);
