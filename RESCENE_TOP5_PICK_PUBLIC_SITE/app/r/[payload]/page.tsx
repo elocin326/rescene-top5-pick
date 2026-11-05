@@ -15,8 +15,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: "MY RESCENE TOP 5",
     description,
     alternates: { canonical: `/r/${payload}` },
-    openGraph: { type: "website", url: `/r/${payload}`, title: "MY RESCENE TOP 5", description, images: [{ url: image, width: 1200, height: 630 }] },
-    twitter: { card: "summary_large_image", title: "MY RESCENE TOP 5", description, images: [image] }
+    openGraph: { type: "website", url: `/r/${payload}`, title: "MY RESCENE TOP 5", description, images: [{ url: image, width: 1200, height: 630, alt: "나만의 리센느 TOP5 결과 이미지", type: "image/png" }] },
+    twitter: { card: "summary_large_image", title: "MY RESCENE TOP 5", description, images: [{ url: image, alt: "나만의 리센느 TOP5 결과 이미지" }] }
   };
 }
 
