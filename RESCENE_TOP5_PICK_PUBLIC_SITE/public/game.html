@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f7e9f2">
+<meta name="description" content="RESCENE TOP5 PICK — 리센느의 노래로 나만의 TOP5를 만들어 보세요.">
+<title>RESCENE TOP5 PICK</title>
+<style>
+:root{--ink:#28202a;--muted:#827583;--pink:#e9a7cf;--pink2:#f6d9eb;--rose:#a94c83;--cream:#fffafc;--line:#eadde7;--green:#497b68;--shadow:0 18px 50px rgba(95,52,81,.10)}
+*{box-sizing:border-box}body{margin:0;color:var(--ink);font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;background:radial-gradient(circle at 10% 0%,#f9e8f2 0,transparent 34%),radial-gradient(circle at 95% 20%,#f5e8ef 0,transparent 30%),#fcf9fb;min-height:100vh}
+button,input{font:inherit}button{cursor:pointer}button:disabled{opacity:.42;cursor:not-allowed}
+.wrap{width:min(100% - 32px,980px);margin:0 auto;padding:24px 0 56px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:34px}
+.brand{font-size:12px;letter-spacing:.22em;font-weight:850;color:var(--rose)}
+.pill{font-size:11px;color:var(--rose);background:#f8e5f1;border:1px solid #efd1e4;border-radius:999px;padding:7px 11px;font-weight:750}
+.hero,.panel{background:rgba(255,255,255,.82);border:1px solid rgba(234,221,231,.9);border-radius:28px;box-shadow:var(--shadow)}
+.hero{padding:clamp(26px,6vw,64px);text-align:center;position:relative;overflow:hidden}
+.hero:before,.hero:after{content:"";position:absolute;border-radius:50%;filter:blur(1px);pointer-events:none}
+.hero:before{width:220px;height:220px;background:#f8e5f0;left:-90px;top:-100px}
+.hero:after{width:260px;height:260px;background:#f3e9f1;right:-130px;bottom:-140px}
+.hero>*{position:relative;z-index:1}
+.hero h1{font-variant-numeric:lining-nums;font-feature-settings:"lnum" 1}
+.kicker{font-size:11px;letter-spacing:.3em;color:var(--rose);font-weight:850}
+h1{font-family:Georgia,"Times New Roman",serif;font-weight:500;letter-spacing:.045em;font-size:clamp(42px,8vw,76px);line-height:1.02;margin:16px 0 8px} h1 span{display:inline-block;white-space:nowrap}
+.subtitle{font-size:clamp(14px,2.4vw,17px);color:var(--muted);line-height:1.7}
+.flower{font-size:28px;color:#d58ab7;margin:12px}
+.primary,.secondary,.ghost{border:0;border-radius:999px;padding:13px 22px;font-weight:800;transition:.18s}
+.primary{background:linear-gradient(120deg,#d985b7,#b9659b);color:white;box-shadow:0 8px 22px rgba(185,101,155,.25)}
+.primary:hover{transform:translateY(-2px);filter:brightness(1.03)}
+.secondary{background:#f7e8f1;color:#914b78;border:1px solid #efd5e5}
+.ghost{background:transparent;color:var(--muted);border:1px solid var(--line)}
+.actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:26px}
+.note{font-size:12px;color:var(--muted);line-height:1.65;margin-top:18px}
+.panel{padding:clamp(18px,4vw,32px);margin-top:18px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+h2{font-size:clamp(23px,4vw,32px);margin:0 0 7px;letter-spacing:-.04em}
+h3{font-size:17px;margin:0}
+.muted{color:var(--muted)}.small{font-size:12px}.tiny{font-size:11px}
+.progress{height:7px;background:#f1e8ee;border-radius:99px;overflow:hidden;margin:18px 0 24px}
+.progress>i{display:block;height:100%;background:linear-gradient(90deg,#d88ab8,#a85b91);border-radius:99px;transition:width .25s}
+.song-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px;margin:20px 0}
+.song{border:1px solid rgba(255,255,255,.72);background-color:#d8bfd0;background-size:cover;background-position:center;background-repeat:no-repeat;border-radius:18px;padding:16px 13px;min-height:154px;text-align:left;color:#fff;display:flex;flex-direction:column;justify-content:space-between;gap:14px;transition:.15s;position:relative;overflow:hidden;box-shadow:0 7px 20px rgba(65,35,57,.12)}
+.song::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(24,13,24,.12) 0%,rgba(24,13,24,.20) 35%,rgba(24,13,24,.80) 100%);transition:background .18s}
+.song:hover{border-color:#dba4c7;transform:translateY(-2px);box-shadow:0 12px 24px rgba(65,35,57,.18)}
+.song.selected{border:3px solid #d986b8;padding:14px 11px;box-shadow:0 0 0 3px rgba(255,255,255,.78),0 10px 26px rgba(185,101,155,.28)}
+.song.selected::before{background:linear-gradient(180deg,rgba(75,25,62,.18),rgba(75,25,62,.58) 100%)}
+.song .title{position:relative;z-index:1;font-weight:900;font-size:16px;line-height:1.35;text-shadow:0 2px 10px rgba(0,0,0,.46);max-width:92%;overflow-wrap:anywhere}
+.song .album{position:relative;z-index:1;display:inline-block;align-self:flex-start;font-size:10px;letter-spacing:.04em;color:#fff;background:rgba(34,20,32,.44);border:1px solid rgba(255,255,255,.28);border-radius:999px;padding:4px 8px;backdrop-filter:blur(5px)}
+.song .check{position:absolute;z-index:2;right:10px;top:10px;color:white;background:#b45f93;border:1px solid rgba(255,255,255,.85);border-radius:50%;width:26px;height:26px;display:grid;place-items:center;font-weight:900;box-shadow:0 2px 8px rgba(0,0,0,.24)}
+.song:focus-visible{outline:3px solid #a94c83;outline-offset:3px}
+.round-hint{background:#fbf2f7;border:1px solid #f1dce9;border-radius:15px;padding:12px 14px;color:#76566d;font-size:13px;line-height:1.6}
+.footer-actions{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-top:22px}
+.hidden{display:none!important}
+.tag{display:inline-flex;border-radius:999px;background:#f8eaf2;border:1px solid #f0d9e7;padding:7px 11px;color:#92547a;font-size:12px;font-weight:700;margin:4px}
+.match{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;margin:25px 0}
+.match button{min-height:170px;text-align:center;align-items:center;justify-content:center}
+.vs{font-size:12px;color:#b28aa4;font-weight:900;letter-spacing:.12em}
+.table{width:100%;border-collapse:collapse;margin-top:15px}
+.table th,.table td{padding:11px 9px;border-bottom:1px solid var(--line);text-align:left;font-size:13px}
+.table th{font-size:11px;color:var(--muted);font-weight:800}
+.rank{font-family:Georgia,serif;font-size:22px;color:#ad6692}
+.tie-item{display:flex;align-items:center;gap:10px;border:1px solid var(--line);background:#fff;border-radius:14px;padding:10px 12px;margin:8px 0}
+.tie-item strong{flex:1}.tie-item button{border:1px solid var(--line);background:#fbf4f8;border-radius:9px;padding:7px 10px;color:#8c4c76}
+.result-card{background:linear-gradient(145deg,#fffafd,#f9eaf3);border:1px solid #ebd4e3;border-radius:24px;padding:24px}
+.result-title{text-align:center;font-family:Georgia,serif;font-size:clamp(20px,5.2vw,30px);letter-spacing:.045em;white-space:nowrap;line-height:1.2;margin:0;font-variant-numeric:lining-nums;font-feature-settings:"lnum" 1}
+.result-sub{text-align:center;color:#946c87;font-size:11px;letter-spacing:.2em;margin:8px 0 20px}
+.top-five-number{display:inline-block;font-family:inherit;font-variant-numeric:lining-nums;font-feature-settings:"lnum" 1;line-height:1;vertical-align:baseline}
+.result-row{display:grid;grid-template-columns:38px 1fr;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid #ecdce6}
+.result-row:last-child{border:0}
+.result-row .num{font-family:Georgia,serif;font-size:26px;color:#b05e91}
+.result-row .songname{font-weight:850}.result-row .albumname{font-size:11px;color:#8d7a89;margin-top:3px}
+.tag-input{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.tag-input input{flex:1;min-width:170px;border:1px solid var(--line);border-radius:999px;padding:11px 14px;background:white}
+.source{font-size:11px;color:#938591;line-height:1.6;margin-top:24px}
+@media(max-width:560px){.song{min-height:138px}.wrap{width:min(100% - 20px,980px);padding-top:14px}.topbar{margin-bottom:18px}.match{gap:7px}.match button{min-height:145px;padding:12px 8px}.song-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.footer-actions{align-items:stretch}.footer-actions button{flex:1}.result-card{padding:17px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="topbar">
+    <div class="brand">A SCENT THAT STAYS · FAN PROJECT</div>
+    <div class="pill">RESCENE · TOP5 PICK</div>
+  </header>
+  <main id="app">
+    <section id="home" class="hero">
+      <div class="kicker">A LITTLE GAME FOR RESCENE</div>
+      <h1>MY RESCENE<br><span style="color:#b86b9a">TOP <span class="top-five-number">5</span></span></h1>
+      <div class="flower">✳</div>
+      <p class="subtitle">리센느의 노래를 하나씩 선택하고 대결시키며<br>나만의 TOP 5를 완성해 보세요.</p>
+      <div class="actions"><button class="primary" id="startBtn">START PICKING →</button></div>
+      <p class="note">30 SONGS · 3 PICK ROUNDS · 21 LEAGUE MATCHES<br>회원가입 없이 참여할 수 있습니다.</p>
+    </section>
+    <section id="game" class="panel hidden"></section>
+    <section id="shareResult" class="panel hidden"></section>
+  </main>
+  <p class="source">비공식 팬 프로젝트 · RESCENE 및 음원/앨범 관련 권리는 각 권리자에게 있습니다.<br>본 페이지는 개인별 선호도 결과를 생성하며 공식 투표 또는 공식 순위가 아닙니다.</p>
+</div>
+<script>
+const COVERS = {
+  "Re:Scene": "https://assets.crownnote.com/s3fs-public/2024-09/600x600bf-60_12.jpg",
+  "Counting Star": "https://img.sbs.co.kr/newsnet/etv/upload/2024/06/27/30000934396.png",
+  "SCENEDROME": "https://pbs.twimg.com/media/HJfiCZPWcAMSTLK.png",
+  "Glow Up": "https://static.qobuz.com/images/covers/ic/mf/wn4q5oaykmfic_600.jpg",
+  "밤밤밤": "https://image.bugsm.co.kr/album/images/500/207323/20732364.jpg",
+  "Dearest": "https://kpopmerch.jp/cdn/shop/files/rescene-album-rescene-dearest-1174258112.jpg?v=1750389457",
+  "고백주파수": "https://image.bugsm.co.kr/album/images/200/41283/4128362.jpg?version=20250917180000",
+  "lip bomb": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/91/66/5a/91665a02-b5c1-8336-e973-88746539ab71/8804775401787.jpg/3000x3000bb.jpg",
+  "Higher": "https://image.bugsm.co.kr/album/images/200/399164/39916442.jpg?version=20260620013355",
+  "BUSY Boy": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/04/87/f4/0487f448-50a5-59d6-fdb5-21e440d969f7/191953518954.jpg/1200x630wp-60.jpg",
+  "RUNAWAY": "https://www.chosun.com/resizer/v2/HFSGIZTFGM4WIMDEME4TSNBZGE.jpg?auth=39c13a17af7fa9bd987482f694d0959a709fa5b1ac2592dac2d8282625fa0763&width=616",
+  "Pretty Girl": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/44/70/65/44706599-2480-efab-7cfe-564b5e254b25/888272184075_Cover.jpg/1200x630wp-60.jpg",
+  "PULSE": "https://image.bugsm.co.kr/album/images/200/41575/4157521.jpg"
+};
+const SONGS = [
+  ["YoYo", "Re:Scene"], ["UhUh", "Re:Scene"],
+  ["Counting Star", "Counting Star"],
+  ["Lucky you", "SCENEDROME"], ["LOVE ATTACK", "SCENEDROME"], ["New World", "SCENEDROME"], ["Pinball", "SCENEDROME"],
+  ["CRASH", "Glow Up"], ["Glow Up", "Glow Up"], ["Going on", "Glow Up"], ["In my lotion", "Glow Up"], ["Cotton Candy", "Glow Up"],
+  ["밤밤밤", "밤밤밤"],
+  ["Deja Vu", "Dearest"], ["Mood", "Dearest"],
+  ["고백주파수", "고백주파수"],
+  ["Heart Drop", "lip bomb"], ["Bloom", "lip bomb"], ["Love Echo", "lip bomb"], ["Hello XO", "lip bomb"], ["MVP", "lip bomb"],
+  ["Higher", "Higher"],
+  ["Busy Boy", "BUSY Boy"],
+  ["Runaway", "RUNAWAY"],
+  ["Pretty Girl", "Pretty Girl"],
+  ["Finest Thing", "PULSE"], ["With", "PULSE"], ["백화요란(Inside Out)", "PULSE"], ["MEME", "PULSE"], ["Dragon", "PULSE"]
+].map((x, i) => ({ id: i, name: x[0], album: x[1], cover: COVERS[x[1]] }));
+
+const $ = id => document.getElementById(id);
+const shuffle = arr => [...arr].sort(()=>Math.random()-.5);
+let state = null;
+
+function freshState(){
+  return {phase:"r1",round:0,groups:[],groupIndex:0,groupPicks:[],survivors:[],matches:[],matchIndex:0,wins:{},results:[],tieGroups:[],tieIndex:0,tieOrders:[],tags:["#RESCENE","#리센느","#RESCENETOP5"],finalOrder:[]};
+}
+function start(){
+  state=freshState();
+  state.groups=chunk(shuffle(SONGS),5);
+  state.wins=Object.fromEntries(SONGS.map(s=>[s.id,0]));
+  renderRound();
+}
+function chunk(a,n){let r=[];for(let i=0;i<a.length;i+=n)r.push(a.slice(i,i+n));return r}
+function songCard(s,selected,clickable=true){
+  const coverStyle = s.cover ? `style="background-image:url('${s.cover.replace(/'/g, "%27")}')"` : "";
+  return `<button class="song ${selected?'selected':''}" ${coverStyle} ${clickable?'data-song="'+s.id+'"':''} ${clickable?'':'disabled'} aria-label="${esc(s.name)}">
+    ${selected?'<span class="check">✓</span>':''}
+    <span class="album">${esc(s.album)}</span><span class="title">${esc(s.name)}</span>
+  </button>`;
+}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function showGame(){ $("home").classList.add("hidden");$("shareResult").classList.add("hidden");$("game").classList.remove("hidden");}
+function renderRound(){
+  showGame();
+  const r=state.phase;
+  const config={
+    r1:{title:"ROUND 01 · FIRST SCENE",sub:"5곡 중 마음에 드는 3곡을 선택하세요.",need:3,total:6,from:30,to:18},
+    r2:{title:"ROUND 02 · SECOND SCENE",sub:"3곡 중 다음 라운드에 남길 2곡을 선택하세요.",need:2,total:6,from:18,to:12},
+    r3:{title:"ROUND 03 · LAST SCENE",sub:"4개 그룹 모두 3곡씩 진행합니다. 앞의 3개 그룹에서는 2곡, 마지막 그룹에서는 1곡을 선택하세요.",need:null,total:4,from:12,to:7}
+  }[r];
+  const group=state.groups[state.groupIndex];
+  // 12곡은 3곡씩 정확히 4개 그룹으로 나뉩니다.
+  // 7곡을 남기기 위해 3개 그룹에서 2곡씩(6곡), 마지막 그룹에서 1곡을 선택합니다.
+  const need=r==="r3"?(state.groupIndex===3?1:2):config.need;
+  const picked=state.groupPicks;
+  const completed=state.groupIndex;
+  $("game").innerHTML=`
+    <div class="row"><span class="pill">${config.title}</span><span class="small muted">${completed+1} / ${config.total} GROUP</span></div>
+    <h2 style="margin-top:18px">${config.from} <span class="muted">→</span> ${config.to}</h2>
+    <p class="muted small">${config.sub}</p>
+    <div class="progress"><i style="width:${(completed/config.total)*100}%"></i></div>
+    <div class="round-hint">현재 그룹에서 <b>${need}곡</b>을 선택하세요. 선택한 곡이 다음 라운드로 올라갑니다.</div>
+    <div class="song-grid">${group.map(s=>songCard(s,picked.includes(s.id))).join("")}</div>
+    <div class="footer-actions"><span class="small muted">선택: ${picked.length} / ${need}</span><button id="groupNext" class="primary" ${picked.length!==need?'disabled':''}>${completed===config.total-1?'라운드 완료':'다음 그룹'} →</button></div>`;
+  $("game").querySelectorAll("[data-song]").forEach(b=>b.addEventListener("click",()=>{
+    const id=Number(b.dataset.song);
+    if(picked.includes(id))state.groupPicks=picked.filter(x=>x!==id);
+    else if(picked.length<need)state.groupPicks=[...picked,id];
+    renderRound();
+  }));
+  $("groupNext").addEventListener("click",()=>{
+    if(state.groupPicks.length!==need)return;
+    state.survivors.push(...group.filter(s=>state.groupPicks.includes(s.id)));
+    state.groupIndex++;state.groupPicks=[];
+    if(state.groupIndex<config.total){renderRound();return;}
+    if(r==="r1"){state.phase="r2";state.groups=chunk(shuffle(state.survivors),3);}
+    else if(r==="r2"){state.phase="r3";const a=shuffle(state.survivors);state.groups=chunk(a,3);}
+    else {beginLeague(state.survivors);return;}
+    state.survivors=[];state.groupIndex=0;renderRound();
+  });
+}
+function beginLeague(songs){
+  state.phase="league";
+  const pairs=[];
+  for(let i=0;i<songs.length;i++)for(let j=i+1;j<songs.length;j++)pairs.push([songs[i].id,songs[j].id]);
+  state.matches=shuffle(pairs);state.matchIndex=0;state.results=[];
+  renderMatch();
+}
+function renderMatch(){
+  showGame();
+  if(state.matchIndex>=state.matches.length){prepareRanking();return;}
+  const [a,b]=state.matches[state.matchIndex],A=SONGS[a],B=SONGS[b];
+  $("game").innerHTML=`
+    <div class="row"><span class="pill">FINAL · ROUND ROBIN</span><span class="small muted">${state.matchIndex+1} / 21 MATCHES</span></div>
+    <h2 style="margin-top:18px">Choose your favorite</h2>
+    <p class="muted small">7곡이 서로 한 번씩 대결합니다. 더 좋아하는 곡을 선택하세요.</p>
+    <div class="progress"><i style="width:${state.matchIndex/21*100}%"></i></div>
+    <div class="match">
+      ${songCard(A,false)}<div class="vs">VS</div>${songCard(B,false)}
+    </div>
+    <div class="round-hint">선택 결과는 승점에 반영됩니다. 각 곡은 총 6경기를 치릅니다.</div>
+    <div class="footer-actions"><span class="small muted">현재 진행률 ${(state.matchIndex/21*100).toFixed(0)}%</span><span class="small muted">승리 +1점</span></div>`;
+  const cards=$("game").querySelectorAll(".song");
+  cards[0].addEventListener("click",()=>chooseWinner(a,b));
+  cards[1].addEventListener("click",()=>chooseWinner(b,a));
+}
+function chooseWinner(winner,loser){
+  state.wins[winner]++;state.results.push({winner,loser});
+  state.matchIndex++;renderMatch();
+}
+function prepareRanking(){
+  const ids=Object.keys(state.wins).filter(id=>state.wins[id]>=0).map(Number);
+  const leagueIds=Array.from(new Set(state.matches.flat()));
+  const sorted=leagueIds.sort((a,b)=>state.wins[b]-state.wins[a]);
+  const groups=[];
+  for(const id of sorted){
+    const last=groups[groups.length-1];
+    if(last&&state.wins[last[0]]===state.wins[id])last.push(id);
+    else groups.push([id]);
+  }
+  state.tieGroups=groups.filter(g=>g.length>1);
+  state.tieIndex=0;state.tieOrders=[];
+  resolveNextTie(groups,0);
+}
+function resolveNextTie(groups,index){
+  while(index<groups.length&&groups[index].length===1)index++;
+  if(index>=groups.length){
+    state.finalOrder=groups.flat();
+    showResult();return;
+  }
+  const g=groups[index];
+  if(g.length===2){
+    const [a,b]=g;
+    const res=state.results.find(x=>(x.winner===a&&x.loser===b)||(x.winner===b&&x.loser===a));
+    groups[index]=res.winner===a?[a,b]:[b,a];
+    resolveNextTie(groups,index+1);return;
+  }
+  state.pendingGroups=groups;state.pendingIndex=index;state.tieOrder=[...g];
+  renderTie();
+}
+function renderTie(){
+  showGame();
+  const group=state.tieOrder;
+  $("game").innerHTML=`
+    <span class="pill">TIE BREAK · MANUAL ORDER</span>
+    <h2 style="margin-top:18px">동점 곡의 순위를 정해주세요</h2>
+    <p class="muted small">3곡 이상이 같은 승점인 경우, 선호하는 순서대로 위에서부터 배치하세요.</p>
+    <div id="tieList">${group.map((id,i)=>`<div class="tie-item"><span class="rank">${i+1}</span><strong>${esc(SONGS[id].name)}</strong><span class="small muted">${esc(SONGS[id].album)}</span><button data-up="${i}" ${i===0?'disabled':''}>↑</button><button data-down="${i}" ${i===group.length-1?'disabled':''}>↓</button></div>`).join("")}</div>
+    <div class="footer-actions"><span class="small muted">위쪽일수록 높은 순위</span><button class="primary" id="tieConfirm">순위 확정 →</button></div>`;
+  $("game").querySelectorAll("[data-up]").forEach(b=>b.onclick=()=>moveTie(Number(b.dataset.up),-1));
+  $("game").querySelectorAll("[data-down]").forEach(b=>b.onclick=()=>moveTie(Number(b.dataset.down),1));
+  $("tieConfirm").onclick=()=>{
+    state.pendingGroups[state.pendingIndex]=[...state.tieOrder];
+    resolveNextTie(state.pendingGroups,state.pendingIndex+1);
+  };
+}
+function moveTie(i,dir){const j=i+dir;[state.tieOrder[i],state.tieOrder[j]]=[state.tieOrder[j],state.tieOrder[i]];renderTie()}
+function showResult(){
+  state.phase="result";
+  const top=state.finalOrder.slice(0,5).map(id=>SONGS[id]);
+  const rest=state.finalOrder.slice(5).map(id=>SONGS[id]);
+  $("game").classList.add("hidden");$("shareResult").classList.remove("hidden");
+  $("shareResult").innerHTML=`
+    <div class="result-card" id="resultCard">
+      <p class="result-sub">A SCENT THAT STAYS</p>
+      <h2 class="result-title">MY RESCENE TOP <span class="top-five-number">5</span></h2>
+      <p class="result-sub">PERSONAL SONG RANKING</p>
+      ${top.map((s,i)=>`<div class="result-row"><div class="num">${String(i+1).padStart(2,"0")}</div><div><div class="songname">${esc(s.name)}</div><div class="albumname">${esc(s.album)}</div></div></div>`).join("")}
+      <p class="result-sub" style="margin:18px 0 0">#RESCENE · #리센느 · #RESCENETOP5</p>
+    </div>
+    <div class="panel" style="box-shadow:none;margin-top:16px">
+      <h3>공유 태그</h3><div id="tagList">${state.tags.map(t=>`<span class="tag">${esc(t)}</span>`).join("")}</div>
+      <div class="tag-input"><input id="tagInput" placeholder="추가 태그 입력 (예: #LOVEATTACK)"><button class="secondary" id="addTag">태그 추가</button></div>
+      <div class="actions" style="justify-content:flex-start">
+        <button class="primary" id="shareBtn">결과 링크 공유</button>
+        <button class="secondary" id="copyBtn">링크 복사</button>
+        <button class="secondary" id="imageBtn">결과 이미지 저장</button>
+        <button class="ghost" id="restartBtn">다시 하기</button>
+      </div>
+      <p class="note">결과 링크에는 TOP5와 공유 태그가 포함됩니다. 링크를 열면 동일한 결과를 확인할 수 있습니다.</p>
+    </div>
+    <div class="panel" style="box-shadow:none">
+      <h3>LEAGUE TABLE</h3>
+      <table class="table"><thead><tr><th>순위</th><th>곡</th><th>승점</th></tr></thead><tbody>
+      ${state.finalOrder.map((id,i)=>`<tr><td>${i+1}</td><td>${esc(SONGS[id].name)}</td><td>${state.wins[id]}</td></tr>`).join("")}
+      </tbody></table>
+    </div>`;
+  $("addTag").onclick=()=>{
+    const v=$("tagInput").value.trim().replace(/\s+/g,"");
+    if(v&&!state.tags.includes(v)){state.tags.push(v.startsWith("#")?v:"#"+v);showResult();}
+  };
+  $("copyBtn").onclick=copyLink;
+  $("shareBtn").onclick=shareResult;
+  $("imageBtn").onclick=downloadImage;
+  $("restartBtn").onclick=()=>{if(confirm("처음부터 다시 시작할까요?")){history.replaceState(null,"",location.pathname+location.search);$("shareResult").classList.add("hidden");$("home").classList.remove("hidden");state=null;}};
+}
+function encodeResult(){
+  const payload={v:1,top:state.finalOrder.slice(0,5),all:state.finalOrder,wins:state.wins,tags:state.tags};
+  const bytes=new TextEncoder().encode(JSON.stringify(payload));
+  let bin="";bytes.forEach(b=>bin+=String.fromCharCode(b));
+  return btoa(bin).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+}
+function resultUrl(){
+  const payload=encodeResult();
+  // Local preview keeps the hash-based URL. On the deployed site, use a
+  // crawlable route so each result can have its own Open Graph metadata/image.
+  if(location.protocol==="file:"){
+    const u=new URL(location.href);u.hash="result="+payload;return u.href;
+  }
+  return new URL("/r/"+payload,location.origin).href;
+}
+async function copyLink(){
+  try{await navigator.clipboard.writeText(resultUrl());alert("결과 링크를 복사했습니다.");}
+  catch(e){prompt("아래 링크를 복사하세요.",resultUrl());}
+}
+async function shareResult(){
+  const url=resultUrl();
+  if(navigator.share){try{await navigator.share({title:"RESCENE MY TOP 5",text:state.tags.join(" "),url});return;}catch(e){}}
+  copyLink();
+}
+function downloadImage(){
+  const top=state.finalOrder.slice(0,5).map(id=>SONGS[id]);
+  const canvas=document.createElement("canvas");
+  canvas.width=1080;canvas.height=1350;
+  const ctx=canvas.getContext("2d");
+  const bg=ctx.createLinearGradient(0,0,1080,1350);
+  bg.addColorStop(0,"#fffafd");bg.addColorStop(1,"#f1d9e8");
+  ctx.fillStyle=bg;ctx.fillRect(0,0,1080,1350);
+  ctx.fillStyle="rgba(229,174,207,.22)";ctx.beginPath();ctx.arc(70,100,180,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle="rgba(222,194,220,.28)";ctx.beginPath();ctx.arc(1020,1250,230,0,Math.PI*2);ctx.fill();
+  ctx.textAlign="center";ctx.fillStyle="#a45e89";ctx.font="700 28px Georgia,serif";ctx.letterSpacing="9px";
+  ctx.fillText("A SCENT THAT STAYS",540,170);
+  ctx.fillStyle="#3b2938";ctx.font="58px Georgia,serif";ctx.letterSpacing="3px";ctx.fillText("MY RESCENE",540,280);
+  ctx.fillStyle="#b56596";ctx.font="86px Georgia,serif";ctx.textAlign="left";
+  const topMetrics=ctx.measureText("TOP ");
+  const fiveMetrics=ctx.measureText("5");
+  const topWordWidth=topMetrics.width, fiveWidth=fiveMetrics.width;
+  const topStart=(1080-(topWordWidth+fiveWidth))/2;
+  const titleBaseline=380;
+  // Georgia's default numeral can use an old-style figure with a descender.
+  // Measure the actual glyph bounds and raise only the 5 so its visible bottom
+  // aligns with the capital letters instead of appearing to hang below TOP.
+  const fiveBaseline=titleBaseline + topMetrics.actualBoundingBoxDescent - fiveMetrics.actualBoundingBoxDescent;
+  ctx.fillText("TOP ",topStart,titleBaseline);
+  ctx.fillText("5",topStart+topWordWidth,fiveBaseline);
+  ctx.textAlign="center";
+  top.forEach((song,i)=>{
+    const y=535+i*128;
+    ctx.textAlign="left";ctx.fillStyle="#b56596";ctx.font="54px Georgia,serif";ctx.fillText(String(i+1).padStart(2,"0"),120,y);
+    ctx.fillStyle="#382b36";ctx.font="bold 40px Arial,sans-serif";ctx.fillText(song.name,230,y);
+    ctx.fillStyle="#8d7888";ctx.font="22px Arial,sans-serif";ctx.fillText(song.album,232,y+38);
+    ctx.strokeStyle="#e5cadb";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(120,y+62);ctx.lineTo(960,y+62);ctx.stroke();
+  });
+  ctx.textAlign="center";ctx.fillStyle="#94617f";ctx.font="21px Arial,sans-serif";
+  ctx.fillText(state.tags.join("   ").slice(0,70),540,1190);
+  ctx.fillStyle="#a45e89";ctx.font="20px Georgia,serif";ctx.letterSpacing="5px";
+  ctx.fillText("RESCENE TOP5 PICK · FAN PROJECT",540,1260);
+  canvas.toBlob(blob=>{
+    if(!blob){alert("이미지 생성에 실패했습니다.");return;}
+    const url=URL.createObjectURL(blob),a=document.createElement("a");
+    a.href=url;a.download="my-rescene-top5.png";a.click();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  },"image/png");
+}
+function xml(s){return String(s).replace(/[<>&'"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;',"'":'&apos;','"':'&quot;'}[c]))}
+function loadShared(){
+  if(!location.hash.startsWith("#result="))return false;
+  try{
+    const raw=location.hash.slice(8).replace(/-/g,"+").replace(/_/g,"/");
+    const json=decodeURIComponent(escape(atob(raw)));
+    const p=JSON.parse(json);
+    if(p.v!==1||!Array.isArray(p.top)||p.top.length!==5)return false;
+    const top=p.top.map(Number).map(id=>SONGS[id]).filter(Boolean);
+    if(top.length!==5)return false;
+    $("home").classList.add("hidden");$("shareResult").classList.remove("hidden");
+    $("shareResult").innerHTML=`<div class="result-card"><p class="result-sub">A SCENT THAT STAYS</p><h2 class="result-title">MY RESCENE TOP <span class="top-five-number">5</span></h2><p class="result-sub">PERSONAL SONG RANKING</p>
+    ${top.map((s,i)=>`<div class="result-row"><div class="num">${String(i+1).padStart(2,"0")}</div><div><div class="songname">${esc(s.name)}</div><div class="albumname">${esc(s.album)}</div></div></div>`).join("")}
+    <p class="result-sub" style="margin-top:20px">${(p.tags||[]).map(esc).join(" · ")}</p></div>
+    <div class="actions"><button class="primary" id="playOwn">나도 TOP5 만들기</button></div>`;
+    $("playOwn").onclick=()=>{history.replaceState(null,"",location.pathname+location.search);$("shareResult").classList.add("hidden");$("home").classList.remove("hidden");};
+    return true;
+  }catch(e){return false;}
+}
+$("startBtn").addEventListener("click",start);
+if(!loadShared()){$("home").classList.remove("hidden");}
+</script>
+</body>
+</html>
