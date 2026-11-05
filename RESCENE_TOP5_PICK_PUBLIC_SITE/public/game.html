@@ -376,8 +376,7 @@ async function shareResult(){
   const file=new File([blob],"my-rescene-top5.png",{type:"image/png"});
   const isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-  // On phones/tablets, pass both the actual PNG file and the post text to the OS share sheet.
-  // X will be available as a destination when the device/browser exposes it as a share target.
+  // Mobile: start the native file share directly in the click event.
   if(isMobile&&navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
     try{
       await navigator.share({
@@ -393,8 +392,7 @@ async function shareResult(){
     return;
   }
 
-  // On desktop, copy the PNG to the clipboard, then open X with the prepared text.
-  // In X's composer, Ctrl+V attaches the copied image as a real post image.
+  // Desktop: initiate image clipboard write, then open X synchronously in the same click.
   let copyPromise=null;
   try{
     if(navigator.clipboard&&typeof navigator.clipboard.write==="function"&&typeof ClipboardItem!=="undefined"){
@@ -403,18 +401,16 @@ async function shareResult(){
   }catch(error){
     copyPromise=Promise.reject(error);
   }
+  openXComposer(postText);
 
   if(copyPromise){
     try{
       await copyPromise;
-      openXComposer(postText);
       showShareToast("결과 이미지가 복사됐습니다. X 작성창에서 Ctrl+V를 눌러 이미지도 첨부하세요.");
     }catch(error){
-      openXComposer(postText);
       showShareToast("이미지 자동 복사는 이 브라우저에서 지원되지 않습니다. '결과 이미지 저장' 후 X 사진 버튼에서 첨부하세요.");
     }
   }else{
-    openXComposer(postText);
     showShareToast("이미지 자동 복사는 이 브라우저에서 지원되지 않습니다. '결과 이미지 저장' 후 X 사진 버튼에서 첨부하세요.");
   }
 }
