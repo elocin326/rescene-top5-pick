@@ -133,7 +133,7 @@ const shuffle = arr => [...arr].sort(()=>Math.random()-.5);
 let state = null;
 
 function freshState(){
-  return {phase:"r1",round:0,groups:[],groupIndex:0,groupPicks:[],survivors:[],matches:[],matchIndex:0,wins:{},results:[],tieGroups:[],tieIndex:0,tieOrders:[],tags:["#RESCENE","#리센느","#RESCENETOP5"],finalOrder:[]};
+  return {phase:"r1",round:0,groups:[],groupIndex:0,groupPicks:[],survivors:[],matches:[],matchIndex:0,wins:{},results:[],tieGroups:[],tieIndex:0,tieOrders:[],tags:["#RESCENE","#리센느","#RESCENE_TOP5"],finalOrder:[]};
 }
 function start(){
   state=freshState();
@@ -277,7 +277,7 @@ function showResult(){
       <h2 class="result-title">MY RESCENE TOP <span class="top-five-number">5</span></h2>
       <p class="result-sub">PERSONAL SONG RANKING</p>
       ${top.map((s,i)=>`<div class="result-row"><div class="num">${String(i+1).padStart(2,"0")}</div><div><div class="songname">${esc(s.name)}</div><div class="albumname">${esc(s.album)}</div></div></div>`).join("")}
-      <p class="result-sub" style="margin:18px 0 0">#RESCENE · #리센느 · #RESCENETOP5</p>
+      <p class="result-sub" style="margin:18px 0 0">#RESCENE · #리센느 · #RESCENE_TOP5</p>
     </div>
     <div class="panel" style="box-shadow:none;margin-top:16px">
       <h3>공유 태그</h3><div id="tagList">${state.tags.map(t=>`<span class="tag">${esc(t)}</span>`).join("")}</div>
@@ -306,53 +306,51 @@ function showResult(){
   $("restartBtn").onclick=()=>{if(confirm("처음부터 다시 시작할까요?")){history.replaceState(null,"",location.pathname+location.search);$("shareResult").classList.add("hidden");$("home").classList.remove("hidden");state=null;}};
 }
 function encodeResult(){
-  // The shared page only needs the selected TOP5 and tags. Omitting league
-  // details keeps the public URL compact and avoids exposing unused data.
-  const payload={v:1,top:state.finalOrder.slice(0,5),tags:state.tags};
-  const bytes=new TextEncoder().encode(JSON.stringify(payload));
-  let bin="";bytes.forEach(b=>bin+=String.fromCharCode(b));
-  return btoa(bin).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+  const top=state.finalOrder.slice(0,5);
+  let packed=0;
+  for(const id of top)packed=packed*SONGS.length+id;
+  return packed.toString(36).padStart(5,"0");
 }
 function resultUrl(){
   const payload=encodeResult();
-  // A share URL stays on the game homepage while carrying the individual
-  // result so X can render that player's result card from server metadata.
   if(location.protocol==="file:"){
     const u=new URL(location.href);u.hash="result="+payload;return u.href;
   }
-  const u=new URL("/",location.origin);
-  u.searchParams.set("share",payload);
-  return u.href;
+  return new URL("/r/"+payload,location.origin).href;
 }
-async function copyLink(){
+function copyLink(){
   try{await navigator.clipboard.writeText(resultUrl());alert("게임 결과 링크를 복사했습니다.");}
   catch(e){prompt("아래 링크를 복사하세요.",resultUrl());}
 }
-function shareResult(){
-  const url=resultUrl();
-  const text="리센느의 노래로 나만의 TOP5를 골라봤어요. 여러분의 최애곡 TOP5도 만들어 보세요!";
-  const extraTags=state.tags
-    .map(tag=>String(tag).trim().replace(/^#+/,""))
-    .filter(Boolean);
-  const hashtags=[...new Set(["RESCENE","리센느","RESCENETOP5",...extraTags])];
-  const params=new URLSearchParams({
-    text,
-    url,
-    hashtags:hashtags.join(",")
-  });
-  const intentUrl="https://x.com/intent/tweet?"+params.toString();
-  // Open directly from the user click without triggering the Web Share sheet.
+function openXComposer(postText){
+  const intentUrl="https://x.com/intent/tweet?"+new URLSearchParams({text:postText}).toString();
   const link=document.createElement("a");
   link.href=intentUrl;
   link.target="_blank";
   link.rel="noopener noreferrer";
   link.click();
 }
-function downloadImage(){
+function shareResult(){
+  const url=resultUrl();
+  const postText="나만의 리센느 TOP5\\n"+url+"\\n#RESCENE #리센느 #RESCENE_TOP5";
+  const blob=createResultImageBlob();
+  if(blob&&typeof File!=="undefined"&&navigator.share&&navigator.canShare){
+    const file=new File([blob],"my-rescene-top5.png",{type:"image/png"});
+    if(navigator.canShare({files:[file]})){
+      navigator.share({files:[file],title:"나만의 리센느 TOP5",text:postText}).catch(error=>{
+        if(error&&error.name!=="AbortError")alert("이미지 공유를 완료하지 못했습니다. 결과 이미지를 저장한 뒤 X 게시글에 첨부해 주세요.");
+      });
+      return;
+    }
+  }
+  openXComposer(postText);
+}
+function createResultImageBlob(){
   const top=state.finalOrder.slice(0,5).map(id=>SONGS[id]);
   const canvas=document.createElement("canvas");
   canvas.width=1080;canvas.height=1350;
   const ctx=canvas.getContext("2d");
+  if(!ctx)return null;
   const bg=ctx.createLinearGradient(0,0,1080,1350);
   bg.addColorStop(0,"#fffafd");bg.addColorStop(1,"#f1d9e8");
   ctx.fillStyle=bg;ctx.fillRect(0,0,1080,1350);
@@ -364,13 +362,10 @@ function downloadImage(){
   ctx.fillStyle="#b56596";ctx.font="86px Georgia,serif";ctx.textAlign="left";
   const topMetrics=ctx.measureText("TOP ");
   const fiveMetrics=ctx.measureText("5");
-  const topWordWidth=topMetrics.width, fiveWidth=fiveMetrics.width;
+  const topWordWidth=topMetrics.width,fiveWidth=fiveMetrics.width;
   const topStart=(1080-(topWordWidth+fiveWidth))/2;
   const titleBaseline=380;
-  // Georgia's default numeral can use an old-style figure with a descender.
-  // Measure the actual glyph bounds and raise only the 5 so its visible bottom
-  // aligns with the capital letters instead of appearing to hang below TOP.
-  const fiveBaseline=titleBaseline + topMetrics.actualBoundingBoxDescent - fiveMetrics.actualBoundingBoxDescent;
+  const fiveBaseline=titleBaseline+topMetrics.actualBoundingBoxDescent-fiveMetrics.actualBoundingBoxDescent;
   ctx.fillText("TOP ",topStart,titleBaseline);
   ctx.fillText("5",topStart+topWordWidth,fiveBaseline);
   ctx.textAlign="center";
@@ -382,30 +377,48 @@ function downloadImage(){
     ctx.strokeStyle="#e5cadb";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(120,y+62);ctx.lineTo(960,y+62);ctx.stroke();
   });
   ctx.textAlign="center";ctx.fillStyle="#94617f";ctx.font="21px Arial,sans-serif";
-  ctx.fillText(state.tags.join("   ").slice(0,70),540,1190);
+  ctx.fillText("#RESCENE  #리센느  #RESCENE_TOP5",540,1190);
   ctx.fillStyle="#a45e89";ctx.font="20px Georgia,serif";ctx.letterSpacing="5px";
   ctx.fillText("RESCENE TOP5 PICK · FAN PROJECT",540,1260);
-  canvas.toBlob(blob=>{
-    if(!blob){alert("이미지 생성에 실패했습니다.");return;}
-    const url=URL.createObjectURL(blob),a=document.createElement("a");
-    a.href=url;a.download="my-rescene-top5.png";a.click();
-    setTimeout(()=>URL.revokeObjectURL(url),1000);
-  },"image/png");
+  const dataUrl=canvas.toDataURL("image/png");
+  const binary=atob(dataUrl.split(",")[1]);
+  const bytes=new Uint8Array(binary.length);
+  for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
+  return new Blob([bytes],{type:"image/png"});
+}
+function downloadImage(){
+  const blob=createResultImageBlob();
+  if(!blob){alert("이미지 생성에 실패했습니다.");return;}
+  const url=URL.createObjectURL(blob),a=document.createElement("a");
+  a.href=url;a.download="my-rescene-top5.png";a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1500);
 }
 function xml(s){return String(s).replace(/[<>&'"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;',"'":'&apos;','"':'&quot;'}[c]))}
+function decodeCompactTop(payload){
+  if(!/^[0-9a-z]{5}$/i.test(payload))return null;
+  let packed=Number.parseInt(payload,36);
+  if(!Number.isSafeInteger(packed)||packed<0||packed>=SONGS.length**5)return null;
+  const top=new Array(5);
+  for(let i=4;i>=0;i--){top[i]=packed%SONGS.length;packed=Math.floor(packed/SONGS.length);}
+  return packed===0?{v:1,top,tags:["#RESCENE","#리센느","#RESCENE_TOP5"]}:null;
+}
 function loadShared(){
   if(!location.hash.startsWith("#result="))return false;
   try{
-    const raw=location.hash.slice(8).replace(/-/g,"+").replace(/_/g,"/");
-    const json=decodeURIComponent(escape(atob(raw)));
-    const p=JSON.parse(json);
-    if(p.v!==1||!Array.isArray(p.top)||p.top.length!==5)return false;
+    const raw=location.hash.slice(8);
+    let p=decodeCompactTop(raw);
+    if(!p){
+      const decoded=raw.replace(/-/g,"+").replace(/_/g,"/");
+      const json=decodeURIComponent(escape(atob(decoded)));
+      p=JSON.parse(json);
+    }
+    if(!p||p.v!==1||!Array.isArray(p.top)||p.top.length!==5)return false;
     const top=p.top.map(Number).map(id=>SONGS[id]).filter(Boolean);
     if(top.length!==5)return false;
     $("home").classList.add("hidden");$("shareResult").classList.remove("hidden");
     $("shareResult").innerHTML=`<div class="result-card"><p class="result-sub">A SCENT THAT STAYS</p><h2 class="result-title">MY RESCENE TOP <span class="top-five-number">5</span></h2><p class="result-sub">PERSONAL SONG RANKING</p>
     ${top.map((s,i)=>`<div class="result-row"><div class="num">${String(i+1).padStart(2,"0")}</div><div><div class="songname">${esc(s.name)}</div><div class="albumname">${esc(s.album)}</div></div></div>`).join("")}
-    <p class="result-sub" style="margin-top:20px">${(p.tags||[]).map(esc).join(" · ")}</p></div>
+    <p class="result-sub" style="margin-top:20px">#RESCENE · #리센느 · #RESCENE_TOP5</p></div>
     <div class="actions"><button class="primary" id="playOwn">나도 TOP5 만들기</button></div>`;
     $("playOwn").onclick=()=>{history.replaceState(null,"",location.pathname+location.search);$("shareResult").classList.add("hidden");$("home").classList.remove("hidden");};
     return true;
