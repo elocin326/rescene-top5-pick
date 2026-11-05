@@ -306,7 +306,9 @@ function showResult(){
   $("restartBtn").onclick=()=>{if(confirm("처음부터 다시 시작할까요?")){history.replaceState(null,"",location.pathname+location.search);$("shareResult").classList.add("hidden");$("home").classList.remove("hidden");state=null;}};
 }
 function encodeResult(){
-  const payload={v:1,top:state.finalOrder.slice(0,5),all:state.finalOrder,wins:state.wins,tags:state.tags};
+  // The shared page only needs the selected TOP5 and tags. Omitting league
+  // details keeps the public URL compact and avoids exposing unused data.
+  const payload={v:1,top:state.finalOrder.slice(0,5),tags:state.tags};
   const bytes=new TextEncoder().encode(JSON.stringify(payload));
   let bin="";bytes.forEach(b=>bin+=String.fromCharCode(b));
   return btoa(bin).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
