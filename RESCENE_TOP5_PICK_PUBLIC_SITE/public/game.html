@@ -318,7 +318,7 @@ function resultUrl(){
   }
   return new URL("/r/"+payload,location.origin).href;
 }
-function copyLink(){
+async function copyLink(){
   try{await navigator.clipboard.writeText(resultUrl());alert("게임 결과 링크를 복사했습니다.");}
   catch(e){prompt("아래 링크를 복사하세요.",resultUrl());}
 }
