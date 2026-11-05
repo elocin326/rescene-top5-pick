@@ -326,7 +326,7 @@ function openXComposer(postText){
   const intentUrl="https://x.com/intent/tweet?"+new URLSearchParams({text:postText}).toString();
   // Open synchronously inside the click event so popup blockers recognize the user gesture.
   const popup=window.open(intentUrl,"_blank");
-  if(!popup)window.location.assign(intentUrl);
+  return {popup,intentUrl};
 }
 function downloadShareImage(blob){
   const objectUrl=URL.createObjectURL(blob);
@@ -356,10 +356,11 @@ function shareResult(){
       return;
     }
   }
-  // Desktop: download the actual result image, then open X. The file can be attached
-  // with X's photo button; Web Intents cannot pre-attach local image files.
+  // Desktop: open X first during the click gesture, then download the actual result PNG.
+  // Web Intents cannot programmatically attach a local file; attach it with X's photo button.
+  const composer=openXComposer(postText);
   downloadShareImage(blob);
-  openXComposer(postText);
+  if(!composer.popup)window.location.assign(composer.intentUrl);
 }
 function createResultImageBlob(){
   const top=state.finalOrder.slice(0,5).map(id=>SONGS[id]);
