@@ -283,7 +283,7 @@ function showResult(){
       <h3>공유 태그</h3><div id="tagList">${state.tags.map(t=>`<span class="tag">${esc(t)}</span>`).join("")}</div>
       <div class="tag-input"><input id="tagInput" placeholder="추가 태그 입력 (예: #LOVEATTACK)"><button class="secondary" id="addTag">태그 추가</button></div>
       <div class="actions" style="justify-content:flex-start">
-        <button class="primary" id="shareBtn">결과 링크 공유</button>
+        <button class="primary" id="shareBtn">X에 공유</button>
         <button class="secondary" id="copyBtn">링크 복사</button>
         <button class="secondary" id="imageBtn">결과 이미지 저장</button>
         <button class="ghost" id="restartBtn">다시 하기</button>
@@ -313,21 +313,30 @@ function encodeResult(){
 }
 function resultUrl(){
   const payload=encodeResult();
-  // Local preview keeps the hash-based URL. On the deployed site, use a
-  // crawlable route so each result can have its own Open Graph metadata/image.
+  // A share URL stays on the game homepage while carrying the individual
+  // result so X can render that player's result card from server metadata.
   if(location.protocol==="file:"){
     const u=new URL(location.href);u.hash="result="+payload;return u.href;
   }
-  return new URL("/r/"+payload,location.origin).href;
+  const u=new URL("/",location.origin);
+  u.searchParams.set("share",payload);
+  return u.href;
 }
 async function copyLink(){
-  try{await navigator.clipboard.writeText(resultUrl());alert("결과 링크를 복사했습니다.");}
+  try{await navigator.clipboard.writeText(resultUrl());alert("게임 결과 링크를 복사했습니다.");}
   catch(e){prompt("아래 링크를 복사하세요.",resultUrl());}
 }
-async function shareResult(){
+function shareResult(){
   const url=resultUrl();
-  if(navigator.share){try{await navigator.share({title:"RESCENE MY TOP 5",text:state.tags.join(" "),url});return;}catch(e){}}
-  copyLink();
+  const text="리센느의 노래 30곡 중 나만의 TOP5를 골라봤어요! 여러분도 취향의 TOP5를 만들어 보세요.";
+  const params=new URLSearchParams({
+    text,
+    url,
+    hashtags:"RESCENE,리센느월드컵"
+  });
+  const intentUrl="https://x.com/intent/tweet?"+params.toString();
+  const popup=window.open(intentUrl,"_blank");
+  if(!popup) window.location.href=intentUrl;
 }
 function downloadImage(){
   const top=state.finalOrder.slice(0,5).map(id=>SONGS[id]);
